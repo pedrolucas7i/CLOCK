@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C.L.O.C.K.</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: #fff;
+            color: #fff;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .widget {
+            background-color: #0a0a0a;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: 'blur(24px) saturate(180%)';
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            border-radius: 23%;
+        }
+
+        .clock {
+            --size: 320px;
+
+            width: var(--size);
+            height: var(--size);
+            /*border: 1px solid #252525;*/
+            border-radius: 50%;
+            position: relative;
+            background: #050505;
+            box-shadow:
+                0 0 0 1px #111,
+                inset 0 0 40px rgba(255, 255, 255, .02);
+        }
+
+        /* Hour markers */
+        .marker {
+            position: absolute;
+            width: 2px;
+            height: 8px;
+            background: #777;
+            left: 50%;
+            top: 8px;
+            transform-origin: 50% calc(var(--size) / 2 - 8px);
+            transform:
+                translateX(-50%) rotate(calc(var(--i) * 30deg));
+        }
+
+        .marker.major {
+            width: 3px;
+            height: 14px;
+            background: #fff;
+        }
+
+        /* Hands */
+        .hand {
+            position: absolute;
+            left: 50%;
+            bottom: 50%;
+            transform-origin: 50% 100%;
+            border-radius: 999px;
+            transform: translateX(-50%) rotate(0deg);
+        }
+
+        .hour {
+            width: 6px;
+            height: 72px;
+            background: #fff;
+        }
+
+        .minute {
+            width: 4px;
+            height: 105px;
+            background: #fff;
+        }
+
+        .second {
+            width: 2px;
+            height: 120px;
+            background: red;
+        }
+
+        /* Center dot */
+        .center {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: red;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        }
+
+        @media (max-width: 500px) {
+            .clock {
+                --size: 260px;
+            }
+
+            .hour {
+                height: 58px;
+            }
+
+            .minute {
+                height: 85px;
+            }
+
+            .second {
+                height: 98px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="widget">
+
+        <div class="clock" id="clock">
+
+            <!-- 12 markers -->
+            <span class="marker major" style="--i:0"></span>
+            <span class="marker" style="--i:1"></span>
+            <span class="marker" style="--i:2"></span>
+            <span class="marker major" style="--i:3"></span>
+            <span class="marker" style="--i:4"></span>
+            <span class="marker" style="--i:5"></span>
+            <span class="marker major" style="--i:6"></span>
+            <span class="marker" style="--i:7"></span>
+            <span class="marker" style="--i:8"></span>
+            <span class="marker major" style="--i:9"></span>
+            <span class="marker" style="--i:10"></span>
+            <span class="marker" style="--i:11"></span>
+
+            <!--div class="accent"></div>-->
+
+            <div class="hand hour" id="hour"></div>
+            <div class="hand minute" id="minute"></div>
+            <div class="hand second" id="second"></div>
+
+            <div class="center"></div>
+        </div>
+    </div>
+
+    <script>
+        const hourHand = document.getElementById("hour");
+        const minuteHand = document.getElementById("minute");
+        const secondHand = document.getElementById("second");
+
+        const interval = Number(1);
+        let second = 0;
+        function drawClock(seconds, minutes, hours) {
+            secondHand.style.transform =
+                `translateX(-50%) rotate(${seconds * 6}deg)`
+
+            minuteHand.style.transform =
+                `translateX(-50%) rotate(${minutes * 6}deg)`;
+
+            hourHand.style.transform =
+                `translateX(-50%) rotate(${hours * 30}deg)`;
+        }
+
+        function updateClock() {
+            const now = new Date();
+
+            const parts = new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Europe/Lisbon",
+                hour: "numeric",
+                minute: "numeric",
+                second: "numeric",
+                fractionalSecondDigits: 3,
+                hour12: false
+            }).formatToParts(now);
+
+            const get = (type) => Number(
+                parts.find(part => part.type === type)?.value || 0
+            );
+
+            const milliseconds = get("fractionalSecond");
+            const seconds = get("second") + milliseconds / 1000 / 60;
+            const minutes = get("minute") + seconds / 60;
+            const hours = (get("hour") % 12) + minutes / 60;
+
+            drawClock(seconds, minutes, hours);
+
+            requestAnimationFrame(updateClock);
+        }
+
+        updateClock();
+
+    </script>
+
+</body>
+
+</html>
