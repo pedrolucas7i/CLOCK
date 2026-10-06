@@ -173,6 +173,11 @@
                 `translateX(-50%) rotate(${hours * 30}deg)`;
         }
 
+        let timetravelProgress = 0;
+        let timetraveling = false;
+        let timetravelStart = 0;
+        const timetravel_DURATION = 6000; // ms
+
         function updateClock() {
             const now = new Date();
 
@@ -185,21 +190,45 @@
                 hour12: false
             }).formatToParts(now);
 
-            const get = (type) => Number(
-                parts.find(part => part.type === type)?.value || 0
-            );
+            const get = (type) =>
+                Number(parts.find(p => p.type === type)?.value || 0);
 
             const milliseconds = get("fractionalSecond");
             const seconds = get("second") + milliseconds / 1000 / 60;
             const minutes = get("minute") + seconds / 60;
             const hours = (get("hour") % 12) + minutes / 60;
 
-            drawClock(seconds, minutes, hours);
+            // Progresso da "viagem"
+            if (timetraveling) {
+                const elapsed = performance.now() - timetravelStart;
+                timetravelProgress = Math.min(elapsed / timetravel_DURATION, 1);
+
+                if (timetravelProgress >= 1) {
+                    timetraveling = false;
+                    timetravelProgress = 0;
+                }
+            }
+
+            // Uma volta completa
+            const timetravelOffset = timetravelProgress * 12;
+
+            drawClock(
+                seconds,
+                minutes + timetravelOffset * 60,
+                hours + timetravelOffset
+            );
 
             requestAnimationFrame(updateClock);
         }
 
         updateClock();
+
+        const clock = document.querySelector("#clock");
+
+        clock.addEventListener("mouseenter", () => {
+            timetraveling = true;
+            timetravelStart = performance.now();
+        });
 
     </script>
 
